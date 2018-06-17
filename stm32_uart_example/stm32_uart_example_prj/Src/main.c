@@ -45,8 +45,13 @@
 
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart1;
+SMARTCARD_HandleTypeDef hsc2;
 DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart1_tx;
+
+/* USER CODE BEGIN PV */
+/* Private variables ---------------------------------------------------------*/
+
 #define RXBUFFERSIZE 1
 
 
@@ -57,8 +62,6 @@ uint8_t TXBUFFERSIZE = sizeof(aTxBuffer);///sizeof(aTxBuffer[0]);
 /* Buffer used for reception */
 uint8_t aRxBuffer[RXBUFFERSIZE];
 
-/* USER CODE BEGIN PV */
-/* Private variables ---------------------------------------------------------*/
 
 /* USER CODE END PV */
 
@@ -67,6 +70,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_USART2_SMARTCARD_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -111,6 +115,7 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_USART1_UART_Init();
+  MX_USART2_SMARTCARD_Init();
   /* USER CODE BEGIN 2 */
 
 
@@ -137,7 +142,7 @@ int main(void)
 	  /*##-3- Put UART peripheral in reception process ###########################*/
 	  /* Any data received will be stored in "RxBuffer" buffer : the number max of
 	     data received is 10 */
-	  if (HAL_UART_Receive_DMA(&huart1, (uint8_t *)aRxBuffer, RXBUFFERSIZE) != HAL_OK)
+	  if (HAL_SMARTCARD_Receive_DMA(&hsc2, (uint8_t *)aRxBuffer, RXBUFFERSIZE) != HAL_OK)
 	  {
 	    /* Transfer error in reception process */
 	    Error_Handler();
@@ -245,6 +250,29 @@ static void MX_USART1_UART_Init(void)
   huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
   if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+}
+
+/* USART2 init function */
+static void MX_USART2_SMARTCARD_Init(void)
+{
+
+  hsc2.Instance = USART2;
+  hsc2.Init.BaudRate = 115200;
+  hsc2.Init.WordLength = SMARTCARD_WORDLENGTH_9B;
+  hsc2.Init.StopBits = SMARTCARD_STOPBITS_1_5;
+  hsc2.Init.Parity = SMARTCARD_PARITY_EVEN;
+  hsc2.Init.Mode = SMARTCARD_MODE_TX_RX;
+  hsc2.Init.CLKPolarity = SMARTCARD_POLARITY_LOW;
+  hsc2.Init.CLKPhase = SMARTCARD_PHASE_1EDGE;
+  hsc2.Init.CLKLastBit = SMARTCARD_LASTBIT_DISABLE;
+  hsc2.Init.Prescaler = 10;
+  hsc2.Init.GuardTime = 0;
+  hsc2.Init.NACKState = SMARTCARD_NACK_DISABLE;
+  if (HAL_SMARTCARD_Init(&hsc2) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
